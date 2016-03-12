@@ -32,6 +32,7 @@ namespace Finanbot
                 Log.Error("File {0} not found", path);
                 return;
             }
+            System.Net.ServicePointManager.ServerCertificateValidationCallback += (o, certificate, chain, errors) => true;
             Config = new IniDataParser().Parse(File.ReadAllText(path, Encoding.UTF8));
 
             Log.Trace("Started with config: {0}", path);
