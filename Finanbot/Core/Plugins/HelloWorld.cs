@@ -26,7 +26,7 @@ namespace Finanbot.Core.Plugins
             }
         }
 
-        public override int Query(Session session, string query)
+        public override int Query(Session session, string query, StringBuilder ans)
         {
             Send("Your query: " + query);
             return 1;

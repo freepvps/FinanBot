@@ -72,11 +72,11 @@ namespace Finanbot.Core.Plugins
             var handler = session.CurrentHandler;
             handler.Handle(session, message);
         }
-        public virtual int Query(Session session, string query)
+        public virtual int Query(Session session, Message query, StringBuilder ans )
         {
             return 0;
         }
-        public void Pulse(Session session)
+        public virtual void Pulse(Session session)
         {
 
         }
