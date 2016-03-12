@@ -25,11 +25,29 @@ namespace Finanbot.Core.Plugins
                 return "Hello, World!";
             }
         }
-
-        public override int Query(Session session, string query, StringBuilder ans)
+        public override PluginCommandHandler Root
         {
-            Send("Your query: " + query);
-            return 1;
+            get
+            {
+                return new HelloWolrdCommand();
+            }
+        }
+        public override string Description
+        {
+            get
+            {
+                return "Тестовый плагин";
+            }
+        }
+
+        public override int Query(Session session, Message query, StringBuilder ans)
+        {
+            if (query.Type == MessageType.TextMessage)
+            {
+                ans.AppendLine("Your query: " + query.Text);
+                return 1;
+            }
+            else { return 0; }
         }
     }
 }

@@ -7,7 +7,7 @@ using Telegram.Bot.Types;
 
 namespace Finanbot.Core.Commands
 {
-    public class HelloWolrdCommand : CommandHandler
+    public class HelloWolrdCommand : PluginCommandHandler
     {
         public override string Help
         {
@@ -18,7 +18,7 @@ namespace Finanbot.Core.Commands
         }
         public override bool Init(Session session)
         {
-            DefaultHandlers["/test"] = new StaticTextHandler();
+            DefaultHandlers["/test"] = new StaticTextCommand("Thx:) /exit - to stop helloworld");
             DefaultHandlers["/exit"] = new ExitCommand();
             return base.Init(session);
         }

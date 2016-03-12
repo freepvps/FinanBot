@@ -7,7 +7,7 @@ using Telegram.Bot.Types;
 
 namespace Finanbot.Core.Commands
 {
-    public class StaticTextHandler : CommandHandler
+    public class StaticTextCommand : CommandHandler
     {
         public virtual string Text { get; set; }
         public override string Help
@@ -29,7 +29,7 @@ namespace Finanbot.Core.Commands
             return true;
         }
 
-        public StaticTextHandler(string text = "")
+        public StaticTextCommand(string text = "")
         {
             Text = text;
         }

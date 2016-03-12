@@ -13,20 +13,9 @@ namespace Finanbot.Core.Plugins
     public abstract class Plugin
     {
         public virtual Logger Log { get; protected set; }
-        public virtual string PluginName
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-        public virtual string UserPluginName
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public abstract string PluginName { get; }
+        public abstract string UserPluginName { get; }
+        public abstract string Description { get; }
         public virtual string ConfigBlock
         {
             get
@@ -34,12 +23,9 @@ namespace Finanbot.Core.Plugins
                 return "main";
             }
         }
-        public virtual PluginCommandHandler Root
+        public abstract PluginCommandHandler Root
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
+            get;
         }
         public Plugin()
         {

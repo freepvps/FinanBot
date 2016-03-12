@@ -11,5 +11,27 @@ namespace Finanbot.Core.Commands
     public class PluginCommandHandler : CommandHandler 
     {
         public virtual Plugin Plugin { get; set; }
+        
+        public override bool Handle(Session session, Message message)
+        {
+            if (message.Type == MessageType.TextMessage)
+            {
+                var text = message.Text;
+                CommandHandler handler;
+                if (DefaultHandlers.TryGetValue(text.TrimEnd(), out handler))
+                {
+                    if (handler is PluginCommandHandler)
+                    {
+                        Plugin.Push((PluginCommandHandler)handler);
+                    }
+                    else
+                    {
+                        session.Push(handler);
+                    }
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }

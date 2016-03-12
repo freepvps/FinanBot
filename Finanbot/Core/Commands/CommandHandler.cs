@@ -10,7 +10,7 @@ namespace Finanbot.Core.Commands
 {
     public class CommandHandler
     {
-        public virtual string Help { get { throw new NotImplementedException(); } }
+        public virtual string Help { get { return string.Empty; } }
         public virtual Dictionary<string, CommandHandler> DefaultHandlers { get; private set; }
         public virtual bool Complete { get; set; }
 
@@ -21,8 +21,11 @@ namespace Finanbot.Core.Commands
 
         public virtual bool Init(Session session)
         {
-            DefaultHandlers["/help"] = new StaticTextHandler(Help);
-            DefaultHandlers["/start"] = new StaticTextHandler(Help);
+            if (string.IsNullOrWhiteSpace(Help)) return false;
+            DefaultHandlers["/help"] = new StaticTextCommand(Help);
+            DefaultHandlers["/start"] = new StaticTextCommand(Help);
+            
+            session.Send(Help);
             return false;
         }
 

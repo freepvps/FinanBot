@@ -17,6 +17,18 @@ namespace Finanbot.Core.Commands
                 var text = message.Text;
                 if (text.StartsWith("/"))
                 {
+                    if (text == "/help")
+                    {
+                        var plugins = new StringBuilder();
+                        plugins.AppendLine("Список доступных сервисов:");
+                        foreach(var p in session.Plugins.Values)
+                        {
+                            plugins.AppendLine(string.Format("{1} - {2} (/{0})", p.PluginName, p.UserPluginName, p.Description));
+                        }
+                        session.Send(plugins.ToString());
+                        return true;
+                    }
+
                     var index = text.IndexOf(' ');
                     if (index == -1) index = text.Length;
 
@@ -27,6 +39,10 @@ namespace Finanbot.Core.Commands
                         plugin.Push(plugin.Root);
                         return true;
                     }
+                    else
+                    {
+                        session.Send("Сервис не найден, попробуйте выполнить команду /help для получения справки.");
+                    }
                 }
                 else
                 {
@@ -36,8 +52,28 @@ namespace Finanbot.Core.Commands
                     var sb = new StringBuilder();
                     foreach(var plugin in session.Plugins.Values)
                     {
-                        var price = plugin.Query(session, query, sb);
+                        var price = plugin.Query(session, message, sb);
+                        if (price > 0)
+                        {
+                            var result = string.Format("{0}:\r\n{1}", plugin.UserPluginName, sb.ToString());
+                            set.Add(Tuple.Create(result, price));
+                        }
+                        sb.Clear();
                     }
+                    if (set.Count == 0)
+                    {
+                        session.Send("По вашему запросу ничего не найдено. Напишите /help для получения справки.");
+                    }
+                    else
+                    {
+                        foreach (var ans in set.OrderBy(x => x.Item2).Reverse())
+                        {
+                            session.Send(ans.Item1);
+                        }
+                    }
+                    return true;
+
+
                 }
             }
             return false;

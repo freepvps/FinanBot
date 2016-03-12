@@ -57,6 +57,7 @@ namespace Finanbot.Core
             foreach(var plugin in PluginManager.GetPlugins())
             {
                 Plugins["/" + plugin.PluginName] = plugin;
+                plugin.Session = this;
             }
 
             Root = new PluginManagerCommand();
@@ -109,7 +110,7 @@ namespace Finanbot.Core
         {
             try
             {
-                Api.SendTextMessage(ChatId, chatMessage, replyMarkup: replyMarkup);
+                Api.SendTextMessage(ChatId, chatMessage, replyMarkup: replyMarkup).Wait();
             }
             catch (Exception ex)
             {
