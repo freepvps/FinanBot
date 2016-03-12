@@ -16,7 +16,7 @@ namespace Finanbot
         public static Api Api;
         static void Main(string[] args)
         {
-            Log.Trace("Started");
+            Log.Trace("Started"); 
         }
     }
 }
