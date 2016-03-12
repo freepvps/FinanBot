@@ -51,7 +51,7 @@ namespace Finanbot.Core.Plugins
         {
             if (query.Type == MessageType.TextMessage)
             {
-                Send(session, "Your query: " + query.Text);
+                SendAnswer(session, "Your query: " + query.Text);
                 return true;
             }
             else { return false; }
