@@ -13,6 +13,7 @@ using Finanbot.Core;
 using File = System.IO.File;
 using System.Threading;
 using Finanbot.Core.Plugins;
+using Finanbot.Core.Helpers;
 
 namespace Finanbot
 {
@@ -20,9 +21,15 @@ namespace Finanbot
     {
         public static Logger Log = LogManager.GetLogger("main");
         public static IniData Config;
+        public static IniData Database;
         public static Api Api;
         static void Main(string[] args)
         {
+            foreach(var exchange in Apis.CurrencyRates.GetExchangeRates())
+            {
+                Log.Trace("{0} - {1} - {2}", exchange.CharCode, exchange.Name, exchange.Value);
+            }
+
             if (args.Length == 0)
             {
                 args = new[] { "fin.conf" };
@@ -35,6 +42,21 @@ namespace Finanbot
             }
             System.Net.ServicePointManager.ServerCertificateValidationCallback += (o, certificate, chain, errors) => true;
             Config = new IniDataParser().Parse(File.ReadAllText(path, Encoding.UTF8));
+
+            var dbPath = Config["main"]["database"];
+            if (File.Exists(dbPath))
+            {
+                Database = new IniDataParser().Parse(File.ReadAllText(dbPath, Encoding.UTF8));
+                Log.Trace("Load db from {0}", dbPath);
+            }
+            else
+            {
+                Database = new IniData();
+            }
+            if (!Database.Sections.ContainsSection("main"))
+            {
+                Database.Sections.Add(new SectionData("main"));
+            }
 
             Log.Trace("Started with config: {0}", path);
             var apiKey = Config["main"]["apikey"];
@@ -53,7 +75,69 @@ namespace Finanbot
 #endif
             Environment.Exit(0);
         }
+        static string GetSectionName(long chatId)
+        {
+            return "chat" + chatId.ToString();
+        }
+        static SectionData GetSection(long chatId)
+        {
+            return new SectionData(GetSectionName(chatId));
+        }
+        static void InitIds(Api api, params long[] chats)
+        {
+            foreach (var chat in chats)
+            {
+                if (!Database.Sections.ContainsSection(GetSectionName(chat)))
+                {
+                    Database.Sections.Add(GetSection(chat));
+                }
+                if (!Sessions.ContainsKey(chat))
+                {
+                    var ses = new Session(Config);
+                    ses.ChatId = chat;
+                    ses.Api = api;
+                    var sectionName = GetSectionName(chat);
+                    var section = Database[sectionName];
+                    foreach(var plugin in ses.Plugins.Values)
+                    {
+                        plugin.LoadDatabase(section);
+                    }
+                    Sessions[chat] = ses;
+                }
+            }
+        }
+        static void SaveDatabase()
+        {
+            var path = Config["main"]["database"];
 
+            lock (Sessions)
+            {
+                var dataBase = Database;
+                lock(dataBase)
+                {
+                    if (!dataBase.Sections.ContainsSection("main"))
+                        dataBase.Sections.Add(new SectionData("main"));
+                    dataBase["main"]["chats"] = string.Join(";", Sessions.Select(x => x.Value.ChatId));
+                    foreach (var session in Sessions.Values)
+                    {
+                        var sectionName = GetSectionName(session.ChatId);
+                        if (!dataBase.Sections.ContainsSection(sectionName))
+                        {
+                            var s = GetSection(session.ChatId);
+                            dataBase.Sections.Add(s);
+                        }
+                        var section = dataBase[sectionName];
+                        foreach (var plugin in session.Plugins.Values)
+                        {
+                            plugin.SaveDatabase(section);
+                        }
+                    }
+                    Database = dataBase;
+                    File.WriteAllText(Config["main"]["database"], Database.ToString());
+                    Log.Info("Database saved");
+                }
+            }
+        }
         static void Pulsar()
         {
             Thread.Sleep(15000);
@@ -73,6 +157,15 @@ namespace Finanbot
                 catch (Exception ex)
                 {
                     Log.Error("PulsarException");
+                    Log.Error(ex);
+                }
+                try
+                {
+                    SaveDatabase();
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("Save db error");
                     Log.Error(ex);
                 }
                 Thread.Sleep(60000);
@@ -103,6 +196,17 @@ namespace Finanbot
             Log.Trace("Bot name: " + me.FirstName);
             Log.Trace("Bot login: " + me.Username);
 
+            try
+            {
+                var ids = Database["main"]["chats"].Safe().Split(";".ToCharArray(), StringSplitOptions.RemoveEmptyEntries).Select(long.Parse).ToArray();
+                InitIds(bot, ids);
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Load db chats error");
+                Log.Error(ex);
+            }
+
             var lastUpdateId = 0;
             while (true)
             {
@@ -130,12 +234,8 @@ namespace Finanbot
                             Session session;
                             lock (Sessions)
                             {
-                                if (!Sessions.TryGetValue(update.Message.Chat.Id, out session))
-                                {
-                                    session = new Session(Config);
-                                    session.Config = Config;
-                                    Sessions[update.Message.Chat.Id] = session;
-                                }
+                                InitIds(bot, update.Message.Chat.Id);
+                                session = Sessions[update.Message.Chat.Id];
                             }
                             session.Process(bot, update.Message);
 #if !DEBUG

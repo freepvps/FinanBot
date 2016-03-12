@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using NLog;
+using IniParser.Model;
 
 namespace Finanbot.Core.Plugins
 {
@@ -35,6 +36,15 @@ namespace Finanbot.Core.Plugins
             State = string.Empty;
         }
 
+        public virtual void LoadDatabase(KeyDataCollection section)
+        {
+
+        }
+        public virtual void SaveDatabase(KeyDataCollection section)
+        {
+
+        }
+
         public virtual void SendAnswer(Session session, string text, ReplyMarkup replyMarkup = null)
         { 
             text = string.Format("{0}:\r\n{1}", UserPluginName, text);
@@ -44,7 +54,12 @@ namespace Finanbot.Core.Plugins
         {
             session.Send(text, replyMarkup);
         }
-        
+
+        public virtual void Initialize(Session session)
+        {
+
+        }
+
         public virtual void Command(Session session, Message message)
         {
             if (message.Type == MessageType.TextMessage && message.Text == "/help")

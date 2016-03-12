@@ -17,11 +17,12 @@ namespace Finanbot.Core
 
         public Logger Log = LogManager.GetLogger("session");
         public IniData Config { get; set; }
+        public IniData Database { get; set; }
         
         public Plugin RunnedPlugin { get; set; }
 
-        public Api Api { get; private set; }
-        public long ChatId { get; private set; }
+        public Api Api { get; set; }
+        public long ChatId { get; set; }
 
         public Session(IniData config)
         {
@@ -35,6 +36,7 @@ namespace Finanbot.Core
                 if (plugins.Contains(plugin.PluginName))
                 {
                     Plugins["/" + plugin.PluginName] = plugin;
+                    plugin.Initialize(this);
                     Log.Trace("Initialize plugin: /{0}, canrun = {1}", plugin.PluginName, plugin.CanRun);
                 }
             }

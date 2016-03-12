@@ -86,7 +86,7 @@ namespace Finanbot.Core.Helpers
                 }
                 else
                 {
-                    time += GetTime(token);
+                    ans += GetTime(token);
                 }
             }
             return ans;

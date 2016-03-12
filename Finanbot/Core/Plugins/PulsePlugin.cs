@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Finanbot.Core.Helpers;
+using IniParser.Model;
 using Telegram.Bot.Types;
 
 namespace Finanbot.Core.Plugins
@@ -29,7 +30,7 @@ namespace Finanbot.Core.Plugins
         {
             get
             {
-                return "Настройка частоты обновлений";
+                return "Настройка частоты уведомлений";
             }
         }
         public override string PluginName
@@ -43,7 +44,7 @@ namespace Finanbot.Core.Plugins
         {
             get
             {
-                return "Pulse";
+                return "Уведомления";
             }
         }
 
@@ -61,6 +62,15 @@ namespace Finanbot.Core.Plugins
                 }
             }
         }
+        public override void LoadDatabase(KeyDataCollection section)
+        {
+            var interval = int.Parse(section["interval"].Safe(MinimumTime.ToString()));
+            PulseTime = interval;
+        }
+        public override void SaveDatabase(KeyDataCollection section)
+        {
+            section["interval"] = PulseTime.ToString();
+        }
 
         public override int GetPriority(Message query)
         {
@@ -68,7 +78,7 @@ namespace Finanbot.Core.Plugins
             {
                 var keywords = new string[][]
                 {
-                    new string[] { "частот", "период", "периуд" },
+                    new string[] { "частот", "период", "периуд", "время" },
                     new string[] { "обновл", "пульс", "уведомл" }
                 };
                 var price = Ext.PriceCalc(query.Text, keywords);
@@ -104,7 +114,7 @@ namespace Finanbot.Core.Plugins
                 else
                 {
                     PulseTime = nt;
-                    Send(session, "Обновления будут приходить каждые " + UserTimeParser.SecondsToString(nt));
+                    Send(session, "Обновления будут приходить каждые " + UserTimeParser.SecondsToString(nt), new ReplyKeyboardHide());
                     session.StopPlugin(this);
                     return;
                 }
