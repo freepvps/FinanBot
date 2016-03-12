@@ -77,18 +77,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Core\Commands\CommandHandler.cs" />
-    <Compile Include="Core\Commands\ExitCommand.cs" />
-    <Compile Include="Core\Commands\HelloWolrdCommand.cs" />
-    <Compile Include="Core\Commands\PluginCommandHandler.cs" />
-    <Compile Include="Core\Commands\PluginManagerCommand.cs" />
     <Compile Include="Core\Helpers\Ext.cs" />
     <Compile Include="Core\Helpers\ReplyQuadreKeyboard.cs" />
+    <Compile Include="Core\Helpers\UserTimeParser.cs" />
     <Compile Include="Core\Plugins\HelloWorld.cs" />
     <Compile Include="Core\Plugins\Plugin.cs" />
     <Compile Include="Core\Plugins\PluginManager.cs" />
+    <Compile Include="Core\Plugins\PulsePlugin.cs" />
     <Compile Include="Core\Session.cs" />
-    <Compile Include="Core\Commands\StaticTextCommand.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -9,7 +9,7 @@ namespace Finanbot.Core.Helpers
 {
     public class ReplyQuadreKeyboard : ReplyKeyboardMarkup
     {
-        public ReplyQuadreKeyboard(bool oneTimeKeyboard = true, params string[] args)
+        public ReplyQuadreKeyboard(bool oneTimeKeyboard = false, params string[] args)
         {
             base.OneTimeKeyboard = oneTimeKeyboard;
             base.Keyboard = Ext.ToMatrix(args);

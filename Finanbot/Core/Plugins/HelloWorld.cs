@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Finanbot.Core.Commands;
 using Finanbot.Core.Helpers;
 using Telegram.Bot.Types;
 
@@ -25,13 +24,6 @@ namespace Finanbot.Core.Plugins
                 return "Hello, World!";
             }
         }
-        public override PluginCommandHandler Root
-        {
-            get
-            {
-                return new HelloWolrdCommand();
-            }
-        }
         public override string Description
         {
             get
@@ -39,15 +31,34 @@ namespace Finanbot.Core.Plugins
                 return "Тестовый плагин";
             }
         }
+        public override bool CanRun
+        {
+            get
+            {
+                return false;
+            }
+        }
 
-        public override int Query(Session session, Message query, StringBuilder ans)
+        public override int GetPriority(Message query)
+        {
+            if (query.Type != MessageType.TextMessage)
+            {
+                return 0;
+            }
+            else { return 1; }
+        }
+        public override bool Query(Session session, Message query)
         {
             if (query.Type == MessageType.TextMessage)
             {
-                ans.AppendLine("Your query: " + query.Text);
-                return 1;
+                Send(session, "Your query: " + query.Text);
+                return true;
             }
-            else { return 0; }
+            else { return false; }
+        }
+        public override void Pulse(Session session)
+        {
+            Send(session, "Hello, World pulse!");
         }
     }
 }

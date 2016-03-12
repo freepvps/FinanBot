@@ -6,106 +6,40 @@ using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using NLog;
-using Finanbot.Core.Commands;
 using Finanbot.Core.Plugins;
+using IniParser.Model;
 
 namespace Finanbot.Core
 {
     public class Session
     {
-        public CommandHandler Root { get; private set; }
-        public Stack<CommandHandler> Handlers { get; private set; }
         public Dictionary<string, Plugin> Plugins { get; private set; }
 
         public Logger Log = LogManager.GetLogger("session");
-
-
-        public bool HandlerIsRoot
-        {
-            get
-            {
-                return Handlers.Count == 0;
-            }
-        }
-        public bool HandlerIs(CommandHandler handler)
-        {
-            if (handler == Root)
-            {
-                return Handlers.Count == 0;
-            }
-            else
-            {
-                return Handlers.Peek() == handler;
-            }
-        }
-        public CommandHandler CurrentHandler
-        {
-            get
-            {
-                return Handlers.Count == 0 ? Root : Handlers.Peek();
-            }
-        }
-            
+        public IniData Config { get; set; }
+        
+        public Plugin RunnedPlugin { get; set; }
 
         public Api Api { get; private set; }
         public long ChatId { get; private set; }
 
-        public Session()
+        public Session(IniData config)
         {
-            Handlers = new Stack<CommandHandler>();
+            Config = config;
+
+            var plugins = new HashSet<string>(config["main"]["plugins"].Split(", ;".ToCharArray(), StringSplitOptions.RemoveEmptyEntries));
+
             Plugins = new Dictionary<string, Plugin>();
             foreach(var plugin in PluginManager.GetPlugins())
             {
-                Plugins["/" + plugin.PluginName] = plugin;
-                plugin.Session = this;
-            }
-
-            Root = new PluginManagerCommand();
-        }
-
-        public void Push(CommandHandler handler)
-        {
-            try
-            {
-                var handled = handler.Init(this);
-                if (!handled)
+                if (plugins.Contains(plugin.PluginName))
                 {
-                    handler.Complete = false;
-                    Handlers.Push(handler);
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Error("InitError chatid = {0}, handler = {1}", ChatId, handler);
-                Log.Error(ex);
-
-                throw;
-            }
-        }
-        public void Flush()
-        {
-            while (Handlers.Count > 0 && Handlers.Peek().Complete)
-            {
-                Handlers.Pop();
-            }
-        }
-        public void Complete(CommandHandler handler)
-        {
-            handler.Complete = true;
-            Flush();
-        }
-        public void CompletePlugin(Plugin plugin)
-        {
-            while(Handlers.Count > 0)
-            {
-                var peek = Handlers.Peek();
-                if (peek is PluginCommandHandler && ((PluginCommandHandler)peek).Plugin == plugin)
-                {
-                    Complete(peek);
+                    Plugins["/" + plugin.PluginName] = plugin;
+                    Log.Trace("Initialize plugin: /{0}, canrun = {1}", plugin.PluginName, plugin.CanRun);
                 }
             }
         }
-
+        
         public void Send(string chatMessage, ReplyMarkup replyMarkup = null)
         {
             try
@@ -121,13 +55,96 @@ namespace Finanbot.Core
             }
         }
 
+        public void StartPlugin(Plugin plugin)
+        {
+            plugin.Start(this);
+            RunnedPlugin = plugin;
+        }
+        public void StopPlugin(Plugin plugin)
+        {
+            plugin.Stop(this);
+            RunnedPlugin = null;
+        }
         public void Process(Api api, Message message)
         {
-            Flush();
             Api = api;
             ChatId = message.Chat.Id;
-            var handler = CurrentHandler;
-            handler.Handle(this, message);
+            if (message.Type == MessageType.TextMessage && message.Text.StartsWith("/"))
+            {
+                var trim = message.Text.Trim();
+                Plugin plugin;
+                if (Plugins.TryGetValue(trim, out plugin) && plugin.CanRun)
+                {
+                    StartPlugin(plugin);
+                    return;
+                }
+                switch(message.Text)
+                {
+                    case "/exit": if (RunnedPlugin != null) StopPlugin(RunnedPlugin); return;
+                }
+            }
+            if (RunnedPlugin != null)
+            {
+                RunnedPlugin.Command(this, message);
+            }
+            else
+            {
+                if (message.Type == MessageType.TextMessage)
+                {
+                    switch (message.Text)
+                    {
+                        case "/start":
+                        case "/help":
+                            {
+                                var sb = new StringBuilder();
+                                sb.AppendLine("Список доступных сервисов:");
+                                foreach (var plugin in Plugins.Values)
+                                {
+                                    if (plugin.CanRun)
+                                    {
+                                        sb.AppendLine(string.Format("{0} - {1} (/{2})", plugin.UserPluginName, plugin.Description, plugin.PluginName));
+                                    }
+                                    else
+                                    {
+                                        sb.AppendLine(string.Format("{0} - {1}", plugin.UserPluginName, plugin.Description));
+                                    }
+                                }
+                                api.SendTextMessage(ChatId, sb.ToString());
+                            }
+                            return;
+                    }
+
+                    var query = message.Text;
+                    var priorities = new List<Tuple<Plugin, int>>();
+                    foreach(var plugin in Plugins.Values)
+                    {
+                        var priority = plugin.GetPriority(message);
+                        if (priority > 0)
+                            priorities.Add(Tuple.Create(plugin, priority));
+                    }
+                    var count = 3;
+                    var empty = true;
+                    var oneselect = false;
+                    foreach (var plugin in priorities.OrderBy(x => x.Item2).Reverse())
+                    {
+                        if (plugin.Item2 == int.MaxValue)
+                        {
+                            oneselect = true;
+                        }
+                        if (oneselect && plugin.Item2 != int.MaxValue) break;
+
+                        var handled = plugin.Item1.Query(this, message);
+                        if (handled)
+                        {
+                            empty = false;
+                            count--;
+                            if (count == 0) break;
+                        }
+                    }
+                    if (!empty) return;
+                }
+                api.SendTextMessage(ChatId, "Я не знаю, что вы хотите, попробуйте вызвать команду /help");
+            }
         }
     }
 }

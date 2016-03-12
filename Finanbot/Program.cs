@@ -12,6 +12,7 @@ using NLog;
 using Finanbot.Core;
 using File = System.IO.File;
 using System.Threading;
+using Finanbot.Core.Plugins;
 
 namespace Finanbot
 {
@@ -41,6 +42,7 @@ namespace Finanbot
             try
             {
 #endif
+                new Thread(Pulsar).Start();
                 RunBot(apiKey);
 #if !DEBUG
             }
@@ -49,6 +51,48 @@ namespace Finanbot
                 Log.Fatal(ex);
             }
 #endif
+            Environment.Exit(0);
+        }
+
+        static void Pulsar()
+        {
+            Thread.Sleep(15000);
+            Log.Trace("Pulsar started");
+            while(true)
+            {
+                try
+                {
+                    lock (Sessions)
+                    {
+                        foreach( var session in Sessions.Values)
+                        {
+                            PulseSession(session);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("PulsarException");
+                    Log.Error(ex);
+                }
+                Thread.Sleep(60000);
+            }
+        }
+        static void PulseSession(Session session)
+        {
+            try
+            {
+                foreach(var plugin in session.Plugins.Values)
+                {
+                    if (plugin is PulsePlugin)
+                        ((PulsePlugin)plugin).SafePulse(session, false);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error("SessionPulseError");
+                Log.Error(ex);
+            }
         }
 
         static Dictionary<long, Session> Sessions = new Dictionary<long, Session>();
@@ -84,10 +128,14 @@ namespace Finanbot
                         {
 #endif
                             Session session;
-                            if (!Sessions.TryGetValue(update.Message.Chat.Id, out session))
+                            lock (Sessions)
                             {
-                                session = new Session();
-                                Sessions[update.Message.Chat.Id] = session;
+                                if (!Sessions.TryGetValue(update.Message.Chat.Id, out session))
+                                {
+                                    session = new Session(Config);
+                                    session.Config = Config;
+                                    Sessions[update.Message.Chat.Id] = session;
+                                }
                             }
                             session.Process(bot, update.Message);
 #if !DEBUG

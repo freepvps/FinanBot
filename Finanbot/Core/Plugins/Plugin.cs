@@ -5,11 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
-using Finanbot.Core.Commands;
 using NLog;
 
 namespace Finanbot.Core.Plugins
 {
+    public delegate void CommandHandler(Session session, Message message);
     public abstract class Plugin
     {
         public virtual Logger Log { get; protected set; }
@@ -23,44 +23,66 @@ namespace Finanbot.Core.Plugins
                 return "main";
             }
         }
-        public abstract PluginCommandHandler Root
-        {
-            get;
-        }
+        public abstract bool CanRun { get; }
+
+        protected string State { get; set; }
+        protected readonly Dictionary<string, CommandHandler> Handlers = new Dictionary<string, CommandHandler>();
+        protected readonly Dictionary<string, CommandHandler> Helpers = new Dictionary<string, CommandHandler>();
+        
         public Plugin()
         {
             Log = LogManager.GetLogger(PluginName);
+            State = string.Empty;
         }
 
-        public virtual Session Session { get; set; }
-
-        public virtual void Send(string text, ReplyMarkup replyMarkup = null)
-        {
+        public virtual void SendAnswer(Session session, string text, ReplyMarkup replyMarkup = null)
+        { 
             text = string.Format("{0}:\r\n{1}", UserPluginName, text);
-            Session.Send(text);
+            Send(session, text, replyMarkup);
         }
-        public virtual void Push(PluginCommandHandler handler)
+        public virtual void Send(Session session, string text, ReplyMarkup replyMarkup = null)
         {
-            handler.Plugin = this;
-            Session.Push(handler);
+            session.Send(text, replyMarkup);
         }
-        public virtual void Complete(PluginCommandHandler handler)
-        {
-            Session.Complete(handler);
-        }
-        public virtual void CompletePlugin()
-        {
-            Session.CompletePlugin(this);
-        }
-
+        
         public virtual void Command(Session session, Message message)
         {
-            var handler = session.CurrentHandler;
-            handler.Handle(session, message);
+            if (message.Type == MessageType.TextMessage && message.Text == "/help")
+            {
+                Help(session);
+            }
+
+            CommandHandler handler;
+            if (Handlers.TryGetValue(State, out handler))
+            {
+                handler(session, message);
+                return;
+            }
         }
-        public virtual int Query(Session session, Message query, StringBuilder ans )
+        public virtual void Help(Session session)
+        {
+            CommandHandler handler;
+            if (Helpers.TryGetValue(State, out handler))
+            {
+                handler(session, null);
+            }
+        }
+        public virtual void Start(Session session)
+        {
+            Help(session);
+            State = string.Empty;
+        }
+        public virtual void Stop(Session session)
+        {
+            State = string.Empty;
+        }
+        public virtual int GetPriority(Message query)
         {
             return 0;
+        }
+        public virtual bool Query(Session session, Message query)
+        {
+            return false;
         }
         public virtual void Pulse(Session session)
         {
