@@ -33,13 +33,21 @@ namespace Finanbot.Core
             var plugins = new HashSet<string>(config["main"]["plugins"].Split(", ;".ToCharArray(), StringSplitOptions.RemoveEmptyEntries));
 
             Plugins = new Dictionary<string, Plugin>();
+            var pluginsPre = new Dictionary<string, Plugin>();
             foreach(var plugin in PluginManager.GetPlugins())
             {
                 if (plugins.Contains(plugin.PluginName))
                 {
-                    Plugins["/" + plugin.PluginName] = plugin;
+                    pluginsPre[plugin.PluginName] = plugin;
                     plugin.Initialize(this);
                     Log.Trace("Initialize plugin: /{0}, canrun = {1}", plugin.PluginName, plugin.CanRun);
+                }
+            }
+            foreach(var plugin in plugins)
+            {
+                if (pluginsPre.ContainsKey(plugin))
+                {
+                    Plugins["/" + plugin] = pluginsPre[plugin];
                 }
             }
         }
@@ -100,17 +108,18 @@ namespace Finanbot.Core
                         case "/start":
                         case "/help":
                             {
+                                var pp = 0;
                                 var sb = new StringBuilder();
                                 sb.AppendLine("Список доступных сервисов:");
                                 foreach (var plugin in Plugins.Values)
                                 {
                                     if (plugin.CanRun)
                                     {
-                                        sb.AppendLine(string.Format("{0} - {1} (/{2})", plugin.UserPluginName, plugin.Description, plugin.PluginName));
+                                        sb.AppendLine(++pp + string.Format(". {0} - {1} (/{2})", plugin.UserPluginName, plugin.Description, plugin.PluginName));
                                     }
                                     else
                                     {
-                                        sb.AppendLine(string.Format("{0} - {1}", plugin.UserPluginName, plugin.Description));
+                                        sb.AppendLine(++pp + string.Format(". {0} - {1}", plugin.UserPluginName, plugin.Description));
                                     }
                                 }
                                 api.SendTextMessage(ChatId, sb.ToString());

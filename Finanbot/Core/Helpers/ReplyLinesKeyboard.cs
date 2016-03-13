@@ -7,12 +7,12 @@ using Telegram.Bot.Types;
 
 namespace Finanbot.Core.Helpers
 {
-    public class ReplyQuadreKeyboard : ReplyKeyboardMarkup
+    public class ReplyLinesKeyboard : ReplyKeyboardMarkup
     {
-        public ReplyQuadreKeyboard(bool oneTimeKeyboard = true, params string[] args)
+        public ReplyLinesKeyboard(bool oneTimeKeyboard = true, params string[] args)
         {
             base.OneTimeKeyboard = oneTimeKeyboard;
-            base.Keyboard = Ext.ToMatrix(args);
+            base.Keyboard = args.Select(x => new[] { x }).ToArray();
         }
     }
 }

@@ -86,6 +86,7 @@
     <Compile Include="Core\Helpers\Ext.cs" />
     <Compile Include="Core\Helpers\LoggerExtenssions.cs" />
     <Compile Include="Core\Helpers\PeriodicCaller.cs" />
+    <Compile Include="Core\Helpers\ReplyLinesKeyboard.cs" />
     <Compile Include="Core\Helpers\ReplyQuadreKeyboard.cs" />
     <Compile Include="Core\Helpers\UserTimeParser.cs" />
     <Compile Include="Core\Plugins\CalcPlugin.cs" />
