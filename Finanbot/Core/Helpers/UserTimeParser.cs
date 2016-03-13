@@ -8,12 +8,62 @@ namespace Finanbot.Core.Helpers
 {
     public class UserTimeParser
     {
+        public static DateTime ParseDatetime(string row)
+        {
+            var tokens = new Queue<string>(GetTokens(row));
+
+            var dateTime = DateTime.Now;
+            while(tokens.Count > 0)
+            {
+                var token = tokens.Dequeue();
+
+                var br = false;
+                switch(token)
+                {
+                    case "завтра": dateTime = dateTime.AddDays(1); continue;
+                    case "послезавтра": dateTime = dateTime.AddDays(2); continue;
+
+                    case "вчера": dateTime = dateTime.AddDays(-1); continue;
+                    case "позавчера": dateTime = dateTime.AddDays(-2); continue;
+
+                    case "утром": dateTime = dateTime.AddHours(8 - dateTime.Hour); continue;
+                    case "днем": dateTime = dateTime.AddHours(12 - dateTime.Hour); continue;
+                    case "вечером": dateTime = dateTime.AddHours(17 - dateTime.Hour); continue;
+                    case "ночью": dateTime = dateTime.AddHours(12 - dateTime.Hour); continue;
+
+                    case "в": dateTime = dateTime.AddHours(-dateTime.Hour).AddMinutes(-dateTime.Minute); br = true; break;
+                    case "через": br = true; break;
+                }
+                if (br) break;
+            }
+
+            dateTime = dateTime.AddSeconds(ParseTime(tokens));
+            return dateTime;
+        }
         private static int GetTime(string token)
         {
             if (string.IsNullOrEmpty(token))
             {
                 return 0;
             }
+            switch (token)
+            {
+                case "полчаса": return 30 * 60;
+                case "полминуты": return 30;
+            }
+            var set = new HashSet<string>
+            {
+                "сек", "мин", "час", "дн", "нед"
+            };
+            var ok = false;
+            foreach (var x in set)
+            {
+                if (token.StartsWith(x))
+                {
+                    ok = true; break;
+                }
+            }
+            if (!ok) return 0;
             // с, м, ч, д
             // секунда
             // минута
@@ -30,8 +80,9 @@ namespace Finanbot.Core.Helpers
             }
             return 0;
         }
-        public static int ParseTime(string s, int defaultTime = 60)
+        public static string[] GetTokens(string s)
         {
+
             s = s + " ";
 
             var tokensList = new List<string>();
@@ -61,8 +112,16 @@ namespace Finanbot.Core.Helpers
                     i = j;
                 }
             }
+            return tokensList.ToArray();
+        }
+        public static int ParseTime(string s, int defaultTime = 60)
+        {
+            var tokens = new Queue<string>(GetTokens(s));
+            return ParseTime(tokens);
+        }
+        public static int ParseTime(Queue<string> tokens, int defaultTime = 60)
+        {
             var ans = 0;
-            var tokens = new Queue<string>(tokensList);
             while (tokens.Count > 0)
             {
                 var token = tokens.Dequeue();
@@ -106,6 +165,8 @@ namespace Finanbot.Core.Helpers
             foreach (var x in d)
             {
                 var t = seconds % x.Value;
+                if (x.Value == 7) t = seconds;
+
                 seconds /= x.Value;
 
                 if (t != 0)

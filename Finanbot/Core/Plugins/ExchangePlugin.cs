@@ -76,7 +76,7 @@ namespace Finanbot.Core.Plugins
                 var interests = section["exchange_interests"].Safe().Split(";".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
                 foreach(var interest in interests)
                 {
-                    var args = interest.Split(' ');
+                    var args = interest.Split('=');
                     if (args.Length >= 2)
                     {
                         InterestedRates[args[0]] = int.Parse(args[1]);
@@ -108,19 +108,33 @@ namespace Finanbot.Core.Plugins
         {
             if (query.Type == MessageType.TextMessage)
             {
+                var delete = query.Text.Contains("удали") || query.Text.Contains("не");
+
                 var sb = new StringBuilder();
                 var anscc = 0;
                 lock (InterestedRates)
                 {
-                    foreach (var rate in SearchRates(query.Text))
+                    if (!delete)
                     {
-                        var rateValue = GetRate(rate);
-                        if (rateValue > 0)
+                        foreach (var rate in SearchRates(query.Text))
                         {
-                            var cc = 0;
-                            InterestedRates.TryGetValue(rate, out cc);
-                            InterestedRates[rate] = cc + 1;
-                            sb.AppendLine(string.Format("{0} = {1}", FormatRateCmd(rate), rateValue));
+                            var rateValue = GetRate(rate);
+                            if (rateValue > 0)
+                            {
+                                var cc = 0;
+                                InterestedRates.TryGetValue(rate, out cc);
+                                InterestedRates[rate] = cc + 1;
+                                sb.AppendLine(string.Format("{0} = {1}", FormatRateCmd(rate), rateValue));
+                                anscc++;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        foreach (var rate in SearchRates(query.Text))
+                        {
+                            InterestedRates.Remove(rate);
+                            sb.AppendLine(string.Format("Информация о {0} больше не будет приходить", FormatRateCmd(rate)));
                             anscc++;
                         }
                     }
@@ -141,7 +155,7 @@ namespace Finanbot.Core.Plugins
         {
             lock (InterestedRates)
             {
-                var interests = InterestedRates.Where(x => x.Value > 0 && Rates.ContainsKey(x.Key)).OrderBy(x => x.Value).Reverse();
+                var interests = InterestedRates.Where(x => x.Value >= 2).OrderBy(x => x.Value).Reverse();
                 var sb = new StringBuilder();
                 var cc = 0;
                 foreach (var interest in interests.Take(5))
@@ -172,7 +186,9 @@ namespace Finanbot.Core.Plugins
             { "евро", "EUR" },
             { "гривн", "UAH" },
             { "гривен", "UAH" },
-            { "стерлинг", "GBP" }
+            { "стерлинг", "GBP" },
+            { "иен", "JPY" },
+            { "йен", "JPY" }
         };
         public static IEnumerable<string> SearchRates(string[] words)
         {
@@ -196,7 +212,7 @@ namespace Finanbot.Core.Plugins
                     if (GetRate(row) > 0)
                     {
                         words[i - 1] = string.Empty;
-                        yield return row.ToUpper();
+                        yield return FormatRateCmd(row.ToUpper());
                         words[i + 1] = string.Empty;
                     }
 
@@ -205,7 +221,7 @@ namespace Finanbot.Core.Plugins
             }
             foreach(var word in words.Where(x => GetRate(x.ToUpper()) > 0))
             {
-                yield return word.ToUpper();
+                yield return FormatRateCmd(word.ToUpper());
             }
         }
         public static string FormatRateCmd(string row)

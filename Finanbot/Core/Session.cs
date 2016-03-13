@@ -126,14 +126,14 @@ namespace Finanbot.Core
                     }
                     var count = 3;
                     var empty = true;
-                    var oneselect = false;
+                    var big = 0;
                     foreach (var plugin in priorities.OrderBy(x => x.Item2).Reverse())
                     {
-                        if (plugin.Item2 == int.MaxValue)
+                        if (plugin.Item2 > big)
                         {
-                            oneselect = true;
+                            big = plugin.Item2;
                         }
-                        if (oneselect && plugin.Item2 != int.MaxValue) break;
+                        if (big >= short.MaxValue && plugin.Item2 < big) break;
 
                         var handled = plugin.Item1.Query(this, message);
                         if (handled)
