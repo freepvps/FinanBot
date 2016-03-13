@@ -82,6 +82,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Apis\ExchangeApi.cs" />
+    <Compile Include="Apis\RatesMap.cs" />
     <Compile Include="Core\Helpers\Ext.cs" />
     <Compile Include="Core\Helpers\PeriodicCaller.cs" />
     <Compile Include="Core\Helpers\ReplyQuadreKeyboard.cs" />
@@ -90,6 +91,7 @@
     <Compile Include="Core\Plugins\ExchangePlugin.cs" />
     <Compile Include="Core\Plugins\HelloWorld.cs" />
     <Compile Include="Core\Plugins\LawPlugin.cs" />
+    <Compile Include="Core\Plugins\NearestExchange.cs" />
     <Compile Include="Core\Plugins\Plugin.cs" />
     <Compile Include="Core\Plugins\PluginManager.cs" />
     <Compile Include="Core\Plugins\PulsePlugin.cs" />

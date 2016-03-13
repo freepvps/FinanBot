@@ -115,36 +115,36 @@ namespace Finanbot.Core
                             }
                             return;
                     }
-
-                    var query = message.Text;
-                    var priorities = new List<Tuple<Plugin, int>>();
-                    foreach(var plugin in Plugins.Values)
-                    {
-                        var priority = plugin.GetPriority(message);
-                        if (priority > 0)
-                            priorities.Add(Tuple.Create(plugin, priority));
-                    }
-                    var count = 3;
-                    var empty = true;
-                    var big = 0;
-                    foreach (var plugin in priorities.OrderBy(x => x.Item2).Reverse())
-                    {
-                        if (big >= short.MaxValue && plugin.Item2 < big) break;
-
-                        var handled = plugin.Item1.Query(this, message);
-                        if (handled)
-                        {
-                            if (plugin.Item2 > big)
-                            {
-                                big = plugin.Item2;
-                            }
-                            empty = false;
-                            count--;
-                            if (count == 0) break;
-                        }
-                    }
-                    if (!empty) return;
                 }
+
+
+                var priorities = new List<Tuple<Plugin, int>>();
+                foreach (var plugin in Plugins.Values)
+                {
+                    var priority = plugin.GetPriority(message);
+                    if (priority > 0)
+                        priorities.Add(Tuple.Create(plugin, priority));
+                }
+                var count = 3;
+                var empty = true;
+                var big = 0;
+                foreach (var plugin in priorities.OrderBy(x => x.Item2).Reverse())
+                {
+                    if (big >= short.MaxValue && plugin.Item2 < big) break;
+
+                    var handled = plugin.Item1.Query(this, message);
+                    if (handled)
+                    {
+                        if (plugin.Item2 > big)
+                        {
+                            big = plugin.Item2;
+                        }
+                        empty = false;
+                        count--;
+                        if (count == 0) break;
+                    }
+                }
+                if (!empty) return;
                 api.SendTextMessage(ChatId, "Я не знаю, что вы хотите, попробуйте вызвать команду /help");
             }
         }

@@ -29,6 +29,11 @@ namespace Finanbot
             {
                 Log.Trace("{0} - {1} - {2}", exchange.CharCode, exchange.Name, exchange.Value);
             }
+            foreach (var exchange in Apis.RatesMap.GetExchangeOffices(55.5f, 37.5f, "RUB", "USD"))
+            {
+                Log.Trace("{0} - {1} : {2}", exchange.Rate, exchange.Latitude, exchange.Longitude);
+            }
+            Log.Trace("OK");
 
             if (args.Length == 0)
             {
