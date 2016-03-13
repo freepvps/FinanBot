@@ -77,7 +77,7 @@ namespace Finanbot.Core.Plugins
 
                     var time = UserTimeParser.ParseDatetime(q);
                     var now = DateTime.Now;
-                    if (now.AddMinutes(1) > time) time = time.AddMinutes(10);
+                    if (now.AddSeconds(40) > time) time = time.AddMinutes(10);
 
                     if (now < time)
                     {

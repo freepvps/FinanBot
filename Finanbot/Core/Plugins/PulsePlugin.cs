@@ -11,7 +11,7 @@ namespace Finanbot.Core.Plugins
 {
     public class PulsePlugin : Plugin
     {
-        public const int MinimumTime = 60 * 60 * 4;
+        public const int MinimumTime = 60;
 
         public int PulseTime { get; set; }
 
@@ -64,7 +64,7 @@ namespace Finanbot.Core.Plugins
         }
         public override void LoadDatabase(KeyDataCollection section)
         {
-            var interval = int.Parse(section["interval"].Safe(MinimumTime.ToString()));
+            var interval = int.Parse(section["interval"].Safe("14400"));
             PulseTime = interval;
         }
         public override void SaveDatabase(KeyDataCollection section)
