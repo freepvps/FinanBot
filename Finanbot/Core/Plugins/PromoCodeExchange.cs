@@ -97,7 +97,7 @@ namespace Finanbot.Core.Plugins
                         List<String> codes = Codes[Arguments];
                         if (m_lastShownCode < Codes.Count)
                         {
-                            SendAnswer(session, "Для магазина " + Arguments + " найден промокод: " + codes[m_lastShownCode], new Finanbot.Core.Helpers.ReplyQuadreKeyboard(true, "Использовать этот промокод", "Найти другой промокод для:" + Arguments));
+                            SendAnswer(session, "Для магазина " + Arguments + " найден промокод: " + codes[m_lastShownCode], new Finanbot.Core.Helpers.ReplyLinesKeyboard(true, "Использовать этот промокод", "Найти другой промокод для:" + Arguments));
                             m_lastShownCode++;
                             return true;
                         }
