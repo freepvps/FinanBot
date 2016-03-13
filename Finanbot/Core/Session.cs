@@ -24,6 +24,8 @@ namespace Finanbot.Core
         public Api Api { get; set; }
         public long ChatId { get; set; }
 
+        public Location Location { get; set; }
+
         public Session(IniData config)
         {
             Config = config;
@@ -127,10 +129,10 @@ namespace Finanbot.Core
                 }
                 var count = 3;
                 var empty = true;
-                var big = 0;
-                foreach (var plugin in priorities.OrderBy(x => x.Item2).Reverse())
+                var big = priorities.Select(x => x.Item2).Max();
+                foreach (var plugin in priorities.OrderBy(x => x.Item2))
                 {
-                    if (big >= short.MaxValue && plugin.Item2 < big) break;
+                    if (big >= short.MaxValue && plugin.Item2 < big) continue;
 
                     var handled = plugin.Item1.Query(this, message);
                     if (handled)

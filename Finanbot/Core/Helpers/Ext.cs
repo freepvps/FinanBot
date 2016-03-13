@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Telegram.Bot;
+using Telegram.Bot.Types;
 
 namespace Finanbot.Core.Helpers
 {
@@ -74,6 +76,12 @@ namespace Finanbot.Core.Helpers
             if (obj is T) return (T)obj;
             if (obj == null || obj is DBNull) return default(T);
             return (T)(dynamic)obj;
+        }
+        public static double Distance(this Location location, Location other)
+        {
+            var lt = location.Latitude - other.Latitude;
+            var lg = location.Longitude - other.Longitude;
+            return Math.Sqrt(lt * lt + lg * lg);
         }
 
         public static List<string> ParseArgs(string s)
