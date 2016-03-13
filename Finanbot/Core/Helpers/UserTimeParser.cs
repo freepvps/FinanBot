@@ -53,7 +53,7 @@ namespace Finanbot.Core.Helpers
             }
             var set = new HashSet<string>
             {
-                "сек", "мин", "час", "дн", "нед"
+                "сек", "мин", "час", "дн", "нед", "ден"
             };
             var ok = false;
             foreach (var x in set)

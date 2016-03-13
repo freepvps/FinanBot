@@ -97,7 +97,7 @@ namespace Finanbot.Core.Plugins
                         var sb = new StringBuilder();
                         foreach(var s in set)
                         {
-                            sb.AppendLine(string.Format("{0}:\r\n{1}", s.Value.Item3, s.Value.Item1));
+                            sb.AppendLine(string.Format("@{0}: {1}", s.Value.Item3, s.Value.Item1));
                         }
                         if (sb.Length > 0)
                         {
