@@ -62,13 +62,14 @@ namespace Finanbot.Core.Plugins
 
         public override int GetPriority(Message query)
         {
+            if (query.Type != MessageType.TextMessage) return 0;
             return 42; //TODO: fix it! // It's normal, lol:D
         }
 
         public override bool Query(Session session, Message query)
         {
-
-            if (query.Text.Contains("Добав"))
+            if (query.Text.Contains("работ")) return false;
+            if (query.Text.ToLower().Contains("добав"))
             {
                 string Arguments = query.Text.Split(":".ToCharArray())[1].Trim();
                 string[] SplitedArguments = Arguments.Split("-".ToCharArray());
@@ -88,7 +89,7 @@ namespace Finanbot.Core.Plugins
             }
             else
             {
-                if (query.Text.Contains("Най"))
+                if (query.Text.ToLower().Contains("най"))
                 {
                     string Arguments = query.Text.Split(":".ToCharArray())[1].Trim();
                     if (Codes.ContainsKey(Arguments))
@@ -107,7 +108,7 @@ namespace Finanbot.Core.Plugins
                     return true;
                 }
             }
-            if (query.Text == "Использовать этот промокод")
+            if (query.Text.ToLower() == "использовать этот промокод")
             {
 
                 if (Codes.ContainsKey(m_lastShop) && Codes[m_lastShop].Count <= m_lastShownCode) Codes[m_lastShop].RemoveAt(m_lastShownCode);

@@ -100,7 +100,7 @@ namespace Finanbot.Core.Plugins
                 var res =  SearchRates(msg).Count() * 100;
                 if (res >= 100)
                 {
-                    if (query.Text.Contains("удали") || query.Text.Contains("не"))
+                    if (query.Text.Contains("удали") || query.Text.Contains(" не"))
                     {
                         Log.Trace("Priority return int.Max");
                         return int.MaxValue;
@@ -117,7 +117,7 @@ namespace Finanbot.Core.Plugins
         {
             if (query.Type == MessageType.TextMessage)
             {
-                var delete = query.Text.Contains("удали") || query.Text.Contains("не");
+                var delete = query.Text.Contains("удали") || query.Text.Contains(" не");
 
                 var sb = new StringBuilder();
                 var anscc = 0;

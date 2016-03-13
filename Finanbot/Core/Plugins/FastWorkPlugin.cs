@@ -54,6 +54,10 @@ namespace Finanbot.Core.Plugins
 
                 return price * 30;
             }
+            if (query.Type == MessageType.LocationMessage)
+            {
+                return 1;
+            }
             return 0;
         }
         public override void Start(Session session)
@@ -76,8 +80,19 @@ namespace Finanbot.Core.Plugins
         }
         public override bool Query(Session session, Message query)
         {
+            if (query.Type == MessageType.LocationMessage)
+            {
+                SendAnswer(session, "Теперь вы можете искать быструю работу поблизости");
+                return true;
+            }
             if (query.Type == MessageType.TextMessage)
             {
+                if (session.Location == null)
+                {
+                    SendAnswer(session, "Отправьте мне свое местоположение");
+                    return true;
+                }
+
                 var low = query.Text.ToLower();
                 var keywords = new string[] { "работ", "задач", "поруч" };
                 foreach(var key in keywords)
@@ -112,17 +127,14 @@ namespace Finanbot.Core.Plugins
                     else if (low.Contains("найти") || low.Contains("поиск"))
                     {
                         var set = Tasks.Where(x => x.Key != query.From.Id).OrderBy(x => x.Value.Item2.Distance(session.Location)).Take(5);
-                        var sb = new StringBuilder();
+                        var cc = 0;
                         foreach(var s in set)
                         {
-                            sb.AppendLine(string.Format("@{0}: {1}", s.Value.Item3, s.Value.Item1));
+                            session.Api.SendTextMessage(session.ChatId, string.Format("Работа от @{0}: {1}", s.Value.Item3, s.Value.Item1));
+                            session.Api.SendLocation(session.ChatId, s.Value.Item2.Latitude, s.Value.Item2.Longitude);
+                            cc++;
                         }
-                        if (sb.Length > 0)
-                        {
-                            SendAnswer(session, sb.ToString());
-                            return true;
-                        }
-                        else
+                        if (cc == 0)
                         {
                             SendAnswer(session, "Никакой работы не найдено");
                             return true;

@@ -47,7 +47,7 @@ namespace Finanbot.Core.Plugins
 
         public virtual void SendAnswer(Session session, string text, ReplyMarkup replyMarkup = null)
         { 
-            text = string.Format("{0}:\r\n{1}", UserPluginName, text);
+            text = string.Format("{0}: {1}", UserPluginName, text);
             Send(session, text, replyMarkup);
         }
         public virtual void Send(Session session, string text, ReplyMarkup replyMarkup = null)
