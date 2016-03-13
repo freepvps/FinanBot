@@ -119,6 +119,24 @@ namespace Finanbot.Core.Plugins
             return false;
         }
 
+        public override void Start(Session session)
+        {
+
+            var examples = new string[]
+            {
+                "Уведомления", "Присылай уведомления каждую минуту", "Уведомления раз в полчаса", "Уведомляй раз в 5 часов"
+            };
+
+            var sb = new StringBuilder();
+            sb.AppendLine("Примеры:");
+            for (var i = 0; i < examples.Length; i++)
+            {
+                sb.AppendLine((i + 1).ToString() + ". " + examples[i]);
+            }
+
+            Send(session, sb.ToString(), new Finanbot.Core.Helpers.ReplyQuadreKeyboard(true, examples));
+            session.StopPlugin(this);
+        }
         public override void Help(Session session)
         {
             Send(session, "Как часто вы хотите получать уведомления? (выберите из списка или укажите вручную). \r\nСейчас: " + UserTimeParser.SecondsToString(PulseTime), new ReplyQuadreKeyboard(true, "1 день", "12 часов", "4 часа", "1 час"));
