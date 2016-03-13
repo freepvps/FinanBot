@@ -11,7 +11,7 @@ namespace Finanbot.Core.Plugins
 {
     public class PulsePlugin : Plugin
     {
-        public const int MinimumTime = 60;
+        public const int MinimumTime = 60 * 60 * 4;
 
         public int PulseTime { get; set; }
 

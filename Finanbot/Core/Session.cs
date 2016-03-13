@@ -61,8 +61,8 @@ namespace Finanbot.Core
 
         public void StartPlugin(Plugin plugin)
         {
-            plugin.Start(this);
             RunnedPlugin = plugin;
+            plugin.Start(this);
         }
         public void StopPlugin(Plugin plugin)
         {

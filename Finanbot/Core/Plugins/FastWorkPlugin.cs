@@ -14,7 +14,7 @@ namespace Finanbot.Core.Plugins
         {
             get
             {
-                return false;
+                return true;
             }
         }
         public override string Description
@@ -55,6 +55,24 @@ namespace Finanbot.Core.Plugins
                 return price * 30;
             }
             return 0;
+        }
+        public override void Start(Session session)
+        {
+
+            var examples = new string[]
+            {
+                "Добавить работу принести мне кофе", "Найти работу", "Удалить работу"
+            };
+
+            var sb = new StringBuilder();
+            sb.AppendLine("Примеры:");
+            for (var i = 0; i < examples.Length; i++)
+            {
+                sb.AppendLine((i + 1).ToString() + ". " + examples[i]);
+            }
+
+            Send(session, sb.ToString(), new Finanbot.Core.Helpers.ReplyQuadreKeyboard(true, examples));
+            session.StopPlugin(this);
         }
         public override bool Query(Session session, Message query)
         {

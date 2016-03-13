@@ -16,7 +16,7 @@ namespace Finanbot.Core.Plugins
         {
             get
             {
-                return false;
+                return true;
             }
         }
         public override string Description
@@ -173,6 +173,23 @@ namespace Finanbot.Core.Plugins
                     SendAnswer(session, sb.ToString());
                 }
             }
+        }
+        public override void Start(Session session)
+        {
+            var examples = new string[]
+            {
+                "Евро к рублю и доллар к рублю", "JPY/RUB", "eur", "Курс гривны"
+            };
+
+            var sb = new StringBuilder();
+            sb.AppendLine("Примеры:");
+            for (var i = 0; i < examples.Length; i++)
+            {
+                sb.AppendLine((i + 1).ToString() + ". " + examples[i]);
+            }
+
+            Send(session, sb.ToString(), new Finanbot.Core.Helpers.ReplyQuadreKeyboard(true, examples));
+            session.StopPlugin(this);
         }
         public static IEnumerable<string> SearchRates(string row)
         {
