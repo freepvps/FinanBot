@@ -97,7 +97,16 @@ namespace Finanbot.Core.Plugins
             if (query.Type == MessageType.TextMessage)
             {
                 var msg = query.Text;
-                return SearchRates(msg).Count() * 100;
+                var res =  SearchRates(msg).Count() * 100;
+                if (res >= 100)
+                {
+                    if (query.Text.Contains("удали") || query.Text.Contains("не"))
+                    {
+                        Log.Trace("Priority return int.Max");
+                        return int.MaxValue;
+                    }
+                }
+                return res;
             }
             else
             {

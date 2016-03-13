@@ -236,6 +236,8 @@ namespace Finanbot
                         try
                         {
 #endif
+                            Log.Trace(update.Message, false);
+                            Log.Trace(update.Message, true);
                             Session session;
                             lock (Sessions)
                             {

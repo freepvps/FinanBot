@@ -129,7 +129,8 @@ namespace Finanbot.Core
                 }
                 var count = 3;
                 var empty = true;
-                var big = priorities.Select(x => x.Item2).Max();
+                var big = 0;
+                if (priorities.Count > 0) big = priorities.Select(x => x.Item2).Max();
                 foreach (var plugin in priorities.OrderBy(x => x.Item2))
                 {
                     if (big >= short.MaxValue && plugin.Item2 < big) continue;
