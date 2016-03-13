@@ -60,19 +60,21 @@ namespace Finanbot.Core.Plugins
 
         }
 
-        public virtual void Command(Session session, Message message)
+        public virtual bool Command(Session session, Message message)
         {
             if (message.Type == MessageType.TextMessage && message.Text == "/help")
             {
                 Help(session);
+                return true;
             }
 
             CommandHandler handler;
             if (Handlers.TryGetValue(State, out handler))
             {
                 handler(session, message);
-                return;
+                return true;
             }
+            return false;
         }
         public virtual void Help(Session session)
         {

@@ -140,7 +140,7 @@ namespace Finanbot.Core.Plugins
                 return true;
             }
         }
-        public override void Command(Session session, Message message)
+        public override bool Command(Session session, Message message)
         {
             if (message.Type == MessageType.TextMessage)
             {
@@ -157,6 +157,7 @@ namespace Finanbot.Core.Plugins
             {
                 Help(session);
             }
+            return true;
         }
     }
 }
