@@ -96,6 +96,7 @@
     <Compile Include="Core\Plugins\NearestExchange.cs" />
     <Compile Include="Core\Plugins\Plugin.cs" />
     <Compile Include="Core\Plugins\PluginManager.cs" />
+    <Compile Include="Core\Plugins\PromoCodeExchange.cs" />
     <Compile Include="Core\Plugins\PulsePlugin.cs" />
     <Compile Include="Core\Plugins\TasksPlugin.cs" />
     <Compile Include="Core\Plugins\FastWorkPlugin.cs" />

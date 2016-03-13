@@ -85,7 +85,7 @@ namespace Finanbot.Core.Plugins
                 var keywords2 = new string[][]
                 {
                     new string[] { "обновл", "пульс", "уведомл" },
-                    new string[] { "раз в", "кажды" }
+                    new string[] { "раз в", "кажд" }
                 };
                 var price2 = Ext.PriceCalc(query.Text, keywords2);
                 if (price2 == 2) return int.MaxValue;
@@ -104,7 +104,7 @@ namespace Finanbot.Core.Plugins
                 var keywords = new string[][]
                 {
                     new string[] { "обновл", "пульс", "уведомл" },
-                    new string[] { "раз в", "кажды" }
+                    new string[] { "раз в", "кажд" }
                 };
                 var price = Ext.PriceCalc(query.Text, keywords);
                 if (price == 2)
